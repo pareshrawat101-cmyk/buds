@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pay — NEXORA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .pay-wrap{padding:44px 0 70px;}
+  .pay-grid{display:grid;grid-template-columns:0.9fr 1.1fr;gap:32px;align-items:flex-start;}
+
+  .qr-card{
+    background:var(--card);border:1px solid var(--line);border-radius:24px;padding:30px;text-align:center;
+    position:sticky;top:24px;
+  }
+  .qr-card h2{font-size:1.25rem;}
+  .qr-card .amount-line{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:2rem;color:var(--cyan);margin:10px 0 18px;}
+  .qr-box{background:#fff;border-radius:16px;padding:16px;display:inline-block;}
+  .qr-box img{width:220px;height:220px;display:block;}
+  .upi-id{font-family:'Space Mono',monospace;font-size:0.85rem;color:var(--text-soft);margin-top:14px;word-break:break-all;}
+  .amount-edit{margin-top:18px;text-align:left;}
+  .amount-edit label{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-soft);display:block;margin-bottom:6px;}
+  .amount-edit input{
+    width:100%;background:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;
+    color:var(--text);font-family:'Space Mono',monospace;font-size:1rem;
+  }
+  .qr-steps{text-align:left;margin-top:20px;padding-top:18px;border-top:1px solid var(--line);}
+  .qr-steps li{color:var(--text-soft);font-size:0.85rem;margin-bottom:8px;}
+
+  .form-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:30px;}
+  .form-card h2{font-size:1.25rem;margin-bottom:6px;}
+  .form-card p.sub{color:var(--text-soft);font-size:0.88rem;margin-bottom:22px;}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .form-grid .full{grid-column:1/-1;}
+  .form-grid label{font-size:0.74rem;font-weight:700;color:var(--text-soft);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;font-family:'Space Mono',monospace;}
+  .form-grid input,.form-grid textarea{
+    width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;font-family:'Inter',sans-serif;
+    font-size:0.92rem;background:var(--ink);color:var(--text);
+  }
+  .form-grid textarea{resize:vertical;min-height:70px;}
+  .form-grid input:focus,.form-grid textarea:focus{outline:2px solid var(--cyan);outline-offset:1px;}
+  .submit-btn{width:100%;justify-content:center;margin-top:20px;}
+  .submit-btn:disabled{opacity:0.6;cursor:not-allowed;}
+  .status-msg{margin-top:14px;border-radius:10px;padding:12px 14px;font-size:0.87rem;display:none;}
+  .status-msg.show{display:block;}
+  .status-success{background:rgba(51,230,204,0.08);border:1px solid var(--cyan);color:var(--cyan);}
+  .status-error{background:rgba(255,107,93,0.1);border:1px solid var(--coral);color:var(--coral);}
+  .fine-note{font-size:0.78rem;color:var(--text-soft);margin-top:16px;line-height:1.5;}
+
+  /* Payment Method Selector */
+  .method-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .method-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: var(--card);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .method-btn:hover {
+    border-color: var(--cyan);
+  }
+  .method-btn.active {
+    background: var(--ink-soft);
+    border-color: var(--cyan);
+    box-shadow: 0 0 20px rgba(51, 230, 204, 0.08);
+  }
+  .method-icon {
+    font-size: 1.4rem;
+  }
+  .method-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text);
+  }
+  .method-btn.active .method-label {
+    color: var(--cyan);
+  }
+
+  /* COD Info Card */
+  .cod-info-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 30px;
+    text-align: center;
+    position: sticky;
+    top: 24px;
+    display: none; /* Shown only when COD is active */
+  }
+  .cod-info-card h2 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+  }
+  .cod-info-icon {
+    font-size: 3rem;
+    margin: 16px 0;
+    animation: bounce 2s infinite;
+  }
+  .cod-benefits {
+    text-align: left;
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+    list-style: none;
+    padding-left: 0;
+  }
+  .cod-benefits li {
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cod-benefits li svg {
+    color: var(--cyan);
+    flex: none;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  @media (max-width:820px){
+    .pay-grid{grid-template-columns:1fr;}
+    .qr-card, .cod-info-card{position:static;}
+    .form-grid{grid-template-columns:1fr;}
+    .method-selector{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+
+
+<svg width="0" height="0" style="position:absolute">
+<defs><symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L19 8"/></symbol></defs>
+</svg>
+
+<header>
+  <div class="wrap nav-row">
+    <div class="logo"><span class="dot"></span>NEXORA</div>
+    <nav class="links"><a href="index.html">← Back to gallery</a></nav>
+  </div>
+</header>
+
+<div class="wrap pay-wrap">
+  
+  <div class="method-selector">
+    <button type="button" class="method-btn active" id="method-upi" onclick="setMethod('upi')">
+      <span class="method-icon">⚡</span>
+      <span class="method-label">UPI Instant Pay (₹799)</span>
+    </button>
+    <button type="button" class="method-btn" id="method-cod" onclick="setMethod('cod')">
+      <span class="method-icon">📦</span>
+      <span class="method-label">Cash on Delivery (COD)</span>
+    </button>
+  </div>
+
+  <div class="pay-grid">
+
+    <div class="left-payment-column">
+      <!-- UPI QR Card -->
+      <div class="qr-card" id="upiCard">
+        <h2>Scan &amp; Pay</h2>
+        <div class="amount-line" id="amountDisplay">₹799</div>
+        <div class="qr-box">
+          <img id="qrImage" src="assets/upi-qr.jpg" alt="UPI payment QR code" style="width: 220px; height: auto; display: block; border-radius: 8px; margin: 0 auto;">
+        </div>
+        <div class="upi-id">UPI ID: <span id="upiIdText">mggamergamersss-1@oksbi</span></div>
+
+        <div class="amount-edit">
+          <label for="qrAmount">Amount to pay (₹)</label>
+          <input type="number" id="qrAmount" min="1" value="799">
+        </div>
+
+        <ol class="qr-steps">
+          <li>1. Scan this code with any UPI app (GPay, PhonePe, Paytm, BHIM...).</li>
+          <li>2. After paying, copy the UTR / transaction reference number shown in your UPI app.</li>
+          <li>3. Fill the form and submit — we verify manually and confirm your order by email.</li>
+        </ol>
+      </div>
+
+      <!-- COD Info Card -->
+      <div class="cod-info-card" id="codCard">
+        <h2>Cash on Delivery (COD)</h2>
+        <div class="cod-info-icon">📦</div>
+        <p style="font-size: 1.05rem; font-weight: 600; color: var(--cyan);">Free Delivery Across India</p>
+        <p style="color: var(--text-soft); font-size: 0.9rem; margin-top: 8px;">No online payment required. Pay ₹799 in cash when the delivery executive brings your NEXORA earbuds.</p>
+        
+        <ul class="cod-benefits">
+          <li>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Pay in cash/UPI at delivery
+          </li>
+          <li>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Free shipping included
+          </li>
+          <li>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            24-48 hours dispatch
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="form-card">
+      <h2 id="formTitle">Confirm your payment</h2>
+      <p class="sub" id="formSubtitle">Submit this after you've paid — we'll cross-check your UTR and confirm your order.</p>
+
+      <form id="paymentForm">
+        <div class="form-grid">
+          <div class="full">
+            <label for="name">Full name*</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+          <div class="full">
+            <label for="email">Email*</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+          <div class="full">
+            <label for="phone">Mobile number*</label>
+            <input type="tel" id="phone" name="phone" placeholder="10-digit mobile number" required>
+          </div>
+          <div class="full">
+            <label for="address">Delivery address*</label>
+            <input type="text" id="address" name="address" required>
+          </div>
+          <div>
+            <label for="pincode">Pincode*</label>
+            <input type="text" id="pincode" name="pincode" inputmode="numeric" required>
+          </div>
+          <div>
+            <label for="amount" id="amountLabel">Amount paid (₹)*</label>
+            <input type="number" id="amount" name="amount" min="1" value="799" required>
+          </div>
+          <div class="full" id="utrWrapper">
+            <label for="utr">UTR / transaction ID*</label>
+            <input type="text" id="utr" name="utr" placeholder="12-digit reference number from your UPI app" required>
+          </div>
+          <div class="full">
+            <label for="message">Message (optional)</label>
+            <textarea id="message" name="message" placeholder="Colour preference, delivery instructions, etc."></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary submit-btn" id="submitBtn">Submit payment details</button>
+
+        <div class="status-msg status-success" id="successMsg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="display:inline;vertical-align:-2px;"><use href="#i-check"/></svg>
+          Sent! We'll verify your payment and confirm your order by email.
+        </div>
+        <div class="status-msg status-error" id="errorMsg">
+          Something went wrong sending this — please check your connection and try again, or contact us directly.
+        </div>
+
+        <p class="fine-note">
+          By submitting, your details (name, email, address, pincode, UTR, amount, message, and time) are sent to us by email for manual payment verification and order fulfilment. We don't store card or UPI PIN details — this form never asks for them.
+        </p>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="logo"><span class="dot"></span>NEXORA</div>
+      <div class="foot-links">
+        <a href="index.html">Gallery</a>
+        <a href="#">Return policy</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="foot-bottom">NEXORA BEYOND SOUND &copy; 2026. All rights reserved.</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  /* ===== CONFIG — replace these with your real values ===== */
+  const UPI_ID = "mggamergamersss-1@oksbi"; 
+  const PAYEE_NAME = "Mg gamer Gamersss";
+  const DEFAULT_AMOUNT = 799;
+
+  const EMAILJS_PUBLIC_KEY = "o7LVVDuzlx3KGYtpm";
+  const EMAILJS_SERVICE_ID = "service_dp5zyfr";
+  const EMAILJS_TEMPLATE_ID = "template_p6tm18q";
+  const NOTIFY_EMAIL = "pareshrawat101@gmail.com"; // set as the "to" address inside your EmailJS template
+
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+
+  let currentMethod = 'upi';
+
+  function setMethod(method) {
+    currentMethod = method;
+    const upiBtn = document.getElementById('method-upi');
+    const codBtn = document.getElementById('method-cod');
+    const upiCard = document.getElementById('upiCard');
+    const codCard = document.getElementById('codCard');
+    const utrWrapper = document.getElementById('utrWrapper');
+    const utrInput = document.getElementById('utr');
+    const formTitle = document.getElementById('formTitle');
+    const formSubtitle = document.getElementById('formSubtitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const amountLabel = document.getElementById('amountLabel');
+
+    if (method === 'upi') {
+      upiBtn.classList.add('active');
+      codBtn.classList.remove('active');
+      upiCard.style.display = 'block';
+      codCard.style.display = 'none';
+      utrWrapper.style.display = 'block';
+      utrInput.required = true;
+      formTitle.textContent = "Confirm your payment";
+      formSubtitle.textContent = "Submit this after you've paid — we'll cross-check your UTR and confirm your order.";
+      submitBtn.textContent = "Submit payment details";
+      amountLabel.textContent = "Amount paid (₹)*";
+    } else {
+      upiBtn.classList.remove('active');
+      codBtn.classList.add('active');
+      upiCard.style.display = 'none';
+      codCard.style.display = 'block';
+      utrWrapper.style.display = 'none';
+      utrInput.required = false;
+      formTitle.textContent = "Place your COD Order";
+      formSubtitle.textContent = "Fill in your shipping details below to place your cash-on-delivery order.";
+      submitBtn.textContent = "Place COD Order";
+      amountLabel.textContent = "Amount to pay (₹)*";
+    }
+  }
+
+  function renderQr(amount){
+    document.getElementById('amountDisplay').textContent = "₹" + amount;
+    document.getElementById('upiIdText').textContent = UPI_ID;
+  }
+
+  const qrAmountInput = document.getElementById('qrAmount');
+  const formAmountInput = document.getElementById('amount');
+
+  qrAmountInput.addEventListener('input', () => {
+    const val = parseFloat(qrAmountInput.value) || DEFAULT_AMOUNT;
+    renderQr(val);
+    formAmountInput.value = val;
+  });
+
+  renderQr(DEFAULT_AMOUNT);
+
+  /* ===== Form submit -> EmailJS ===== */
+  const form = document.getElementById('paymentForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const successMsg = document.getElementById('successMsg');
+  const errorMsg = document.getElementById('errorMsg');
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    successMsg.classList.remove('show');
+    errorMsg.classList.remove('show');
+    submitBtn.disabled = true;
+    submitBtn.textContent = currentMethod === 'upi' ? "Sending..." : "Placing Order...";
+
+    const payload = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      address: document.getElementById('address').value,
+      pincode: document.getElementById('pincode').value,
+      utr: currentMethod === 'upi' ? document.getElementById('utr').value : "Cash on Delivery (COD)",
+      amount: document.getElementById('amount').value,
+      message: document.getElementById('message').value + 
+               "\nMobile: " + document.getElementById('phone').value + 
+               (currentMethod === 'cod' ? " [Payment Method: Cash on Delivery]" : " [Payment Method: UPI Prepaid]"),
+      time: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
+      to_email: NOTIFY_EMAIL
+    };
+
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, payload)
+      .then(() => {
+        successMsg.classList.add('show');
+        successMsg.innerHTML = currentMethod === 'upi'
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="display:inline;vertical-align:-2px;"><use href="#i-check"/></svg> Sent! We\'ll verify your payment and confirm your order by email.'
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="display:inline;vertical-align:-2px;"><use href="#i-check"/></svg> Order Placed! We\'ll dispatch your earbuds and notify you by email.';
+        form.reset();
+        formAmountInput.value = qrAmountInput.value || DEFAULT_AMOUNT;
+      })
+      .catch((err) => {
+        console.error('EmailJS error:', err);
+        errorMsg.classList.add('show');
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = currentMethod === 'upi' ? "Submit payment details" : "Place COD Order";
+      });
+  });
+</script>
+</body>
+</html>
